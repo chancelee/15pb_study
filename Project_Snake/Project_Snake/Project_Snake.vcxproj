@@ -69,6 +69,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -80,15 +81,19 @@
   <ItemGroup>
     <ClCompile Include="MyDraw.cpp" />
     <ClCompile Include="MyFood.cpp" />
+    <ClCompile Include="MyGame.cpp" />
     <ClCompile Include="MyMap.cpp" />
     <ClCompile Include="MySnake.cpp" />
+    <ClCompile Include="MyWelcome.cpp" />
     <ClCompile Include="project_snake.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyDraw.h" />
     <ClInclude Include="MyFood.h" />
+    <ClInclude Include="MyGame.h" />
     <ClInclude Include="MyMap.h" />
     <ClInclude Include="MySnake.h" />
+    <ClInclude Include="MyWelcome.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

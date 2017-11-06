@@ -23,7 +23,7 @@ typedef enum _FOOD_COLOR{
 	_COLOR_CHANGE_COLOR
 }FOOD_COLOR;
 
-const char food_str[][3] = { "¡ï", "¦·", "$", "¡ñ", "¡÷", "¡Þ", "¡Æ" };
+extern const char food_str[][3];
 
 class CMyFood {
 public:
@@ -35,5 +35,4 @@ public:
 
 public:
 	static int m_food_count;
-	static int m_food_count_storage;
 };

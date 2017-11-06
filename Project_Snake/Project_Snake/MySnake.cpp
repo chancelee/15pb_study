@@ -2,8 +2,17 @@
 #include "MyDraw.h"
 #include "MyMap.h"
 #include "MyFood.h"
+#include "MyGame.h"
 #include <conio.h>
+#include <fstream>
 
+char CMySnake::m_choose_level = 0;
+int CMySnake::m_time_blood = 100;
+int CMySnake::m_score = 0;
+
+const char snake_head_str[][3] = { ">", "¡ñ", "*" };
+const char snake_protected_head[3] = "¡÷";
+const char snake_color_str[] = { 0x07, 0x02, 0x03, 0x04, 0x05, 0x06 };
 
 CMySnake::CMySnake() {
 }
@@ -11,8 +20,6 @@ CMySnake::CMySnake() {
 
 CMySnake::~CMySnake() {
 }
-
-bool CMySnake::m_snake_in_hole = false;
 
 void CMySnake::Init(int nX, int nY, SNAKEDIR nDir) {
 	CMyDraw snake_head_obj;
@@ -27,12 +34,14 @@ void CMySnake::Init(int nX, int nY, SNAKEDIR nDir) {
 
 	m_nDirection = nDir;
 
-	snake_head_obj.WriteChar(nX, nY, ">", snake_color[0]);
+	snake_head_obj.WriteChar(nX, nY, ">", snake_color_str[0]);
 
 	CMyMap::m_gMap[nY][nX] = WALL_SANKE;
 }
 
 void CMySnake::ChangeProperty(char control_key) {
+	CMyDraw test_draw_obj;
+
 	switch (control_key) {
 	/* Direction */
 	case 'K':
@@ -100,8 +109,6 @@ void CMySnake::SnakeErase() {
 void CMySnake::SnakeDraw() {
 	CMyDraw snake_obj;
 	int body_count = m_vecBody.size();
-	static char (*p_head)[3] = (char(*)[3])snake_head;
-	static char* p_color = (char*)snake_color;
 
 	switch (m_eat_food) {
 	case FOOD_STAR:
@@ -112,9 +119,9 @@ void CMySnake::SnakeDraw() {
 	case FOOD_ADD_BLOOD:
 		break;
 	case FOOD_CHANGE_HEAD:
-		p_head++;
-		if (p_head > snake_head + sizeof(snake_head) / sizeof(snake_head[0]) - 1) {
-			p_head = (char(*)[3])snake_head;
+		m_p_snake_head++;
+		if (m_p_snake_head > snake_head_str + sizeof(snake_head_str) / sizeof(snake_head_str[0]) - 1) {
+			m_p_snake_head = (char(*)[3])snake_head_str;
 		}
 		m_protected_head = false;
 		break;
@@ -124,9 +131,9 @@ void CMySnake::SnakeDraw() {
 	case FOOD_ADD_TWO_NODE:
 		break;
 	case FOOD_CHANGE_COLOR:
-		p_color++;
-		if (p_color > snake_color + sizeof(snake_color) / sizeof(snake_color[0]) - 1) {
-			p_color = (char*)snake_color;
+		m_p_snake_color++;
+		if (m_p_snake_color > snake_color_str + sizeof(snake_color_str) / sizeof(snake_color_str[0]) - 1) {
+			m_p_snake_color = (char*)snake_color_str;
 		}
 		break;
 	default:
@@ -137,8 +144,8 @@ void CMySnake::SnakeDraw() {
 	snake_obj.WriteChar(
 		m_vecBody[0].nX, 
 		m_vecBody[0].nY, 
-		m_protected_head ? (char*)snake_protected_head: (char*)p_head, 
-		*p_color);
+		m_protected_head ? (char*)snake_protected_head : (char*)m_p_snake_head,
+		*m_p_snake_color);
 	CMyMap::m_gMap[m_vecBody[0].nY][m_vecBody[0].nX] = WALL_SANKE;
 
 	for (int i = 1; i < body_count; i++) {
@@ -147,7 +154,7 @@ void CMySnake::SnakeDraw() {
 		 */
 		if (CMyMap::m_gMap[m_vecBody[i].nY][m_vecBody[i].nX] <= FOOD_ST || 
 			CMyMap::m_gMap[m_vecBody[i].nY][m_vecBody[i].nX] >= FOOD_ED) {
-			snake_obj.WriteChar(m_vecBody[i].nX, m_vecBody[i].nY, "-", *p_color);
+			snake_obj.WriteChar(m_vecBody[i].nX, m_vecBody[i].nY, "-", *m_p_snake_color);
 			CMyMap::m_gMap[m_vecBody[i].nY][m_vecBody[i].nX] = WALL_SANKE;
 		}
 	}
@@ -156,9 +163,15 @@ void CMySnake::SnakeDraw() {
 bool CMySnake::SnakeMove() {
 	int snake_size = 0;
 
+	m_time_blood--;
+
+	if (m_time_blood == 0) {
+		return false;
+	}
+
 	// Before move, check first
 	if (!SnakeCanMove()) {
-		MessageBox(NULL, L"U R LOSER", L"Game Over", MB_OK);
+/*		MessageBox(NULL, L"U R LOSER", L"Game Over", MB_OK);*/
 		return false;
 	}
 
@@ -200,8 +213,6 @@ bool CMySnake::SnakeCanMove() {
 	/* no specific meaning, when draw, will be overwrite */
 	SNAKENODE add_food_node = {5,5};
 	static CMyFood food_storage_obj;
-	CMyMap snake_hole_map;
-	CMyDraw snake_hole_draw_obj;
 
 	switch (m_nDirection) {
 	case UP:
@@ -226,6 +237,7 @@ bool CMySnake::SnakeCanMove() {
 		goto snake_add_node;
 	case FOOD_STORM:
 		m_eat_food = FOOD_STORM;
+		m_score += 3;
 		goto snake_add_node;
 	case FOOD_ADD_BLOOD:
 		m_eat_food = FOOD_ADD_BLOOD;
@@ -242,44 +254,15 @@ bool CMySnake::SnakeCanMove() {
 	case FOOD_CHANGE_COLOR:
 		m_eat_food = FOOD_CHANGE_COLOR;
 		goto snake_add_node;
-	case SNAKE_HOLE:
-		m_snake_in_hole = !m_snake_in_hole;
-		if (m_snake_in_hole) {
-			for (int i = 0; i < MAPROW; i++) {
-				for (int j = 0; j < MAPCOL; j++) {
-					CMyMap::m_gMap_storage[i][j] = CMyMap::m_gMap[i][j];
-					CMyMap::m_gMap[i][j] = 0;
-				}
-			}
-			food_storage_obj.m_food_count_storage = food_storage_obj.m_food_count;
-			food_storage_obj.m_food_count = 0;
-
-			system("cls");
-			snake_hole_map.InitMap();
-			snake_hole_draw_obj.WriteChar(1, 1, "  ", 0);
-			snake_hole_draw_obj.WriteChar(1, 1, (char*)bound_str[1], COLOR_SNAKE_HOLE);
-			CMyMap::m_gMap[1][1] = SNAKE_HOLE;
-			Init(1, 1, RIGHT);
-		} else {
-			for (int i = 0; i < MAPROW; i++) {
-				for (int j = 0; j < MAPCOL; j++) {
-					CMyMap::m_gMap[i][j] = CMyMap::m_gMap_storage[i][j];
-				}
-			}
-			food_storage_obj.m_food_count = food_storage_obj.m_food_count_storage;
-
-			system("cls");
-			snake_hole_map.InitMap();
-			Arc();
-		}
-		break;
 	case WALL_INNER_BOUND:
 		if (m_protected_head) {
 			CMyMap::m_gMap[snake_head.nY][snake_head.nX] = 0;
 			break;
 		}
 		return false;
-	case WALL_BOUND:
+	case WALL_BOUND_THREE:
+	case WALL_BOUND_TWO:
+	case WALL_BOUND_ONE:
 	case WALL_SANKE:
 		return false;
 	default:
@@ -289,9 +272,104 @@ bool CMySnake::SnakeCanMove() {
 	return true;
 
 snake_add_node:
+	m_time_blood += 50;
+	m_score += (m_choose_level - '0');
 	m_vecBody.push_back(add_food_node);
 	CMyFood::m_food_count--;
 	CMyMap::m_gMap[snake_head.nY][snake_head.nX] = 0;
+
+	return true;
+}
+
+void CMySnake::SnakeClear() {
+	m_vecBody.clear();
+}
+
+void CMySnake::SaveSnakeInfo() {
+	char head_distance = m_p_snake_head - snake_head_str;
+	char color_distance = m_p_snake_color - snake_color_str;
+	int snake_length = m_vecBody.size();
+	CMyFood food_obj;
+	int food_count = food_obj.m_food_count;
+
+	fstream fout("snake_info", ios::out | ios::binary);
+
+	fout.write((char*)&m_nDirection, sizeof(m_nDirection));  // 4B
+	fout.write((char*)&m_protected_head, sizeof(m_protected_head)); // 1B
+ 	fout.write((char*)&m_storm_coming, sizeof(m_storm_coming)); // 1B
+ 	fout.write((char*)&m_choose_level, sizeof(m_choose_level)); // 1B
+ 	fout.write((char*)&m_time_blood, sizeof(m_time_blood)); // 4B
+ 	fout.write((char*)&m_score, sizeof(m_score)); // 4B
+	fout.write(&head_distance, sizeof(head_distance)); // 1B
+	fout.write(&color_distance, sizeof(color_distance)); // 1B
+
+	fout.write((char*)&food_count, sizeof(food_count)); // 4B
+	fout.write((char*)&snake_length, sizeof(snake_length)); // 4B
+	// Every node contain (x,y) 8B
+ 	for (SNAKENODE &each : m_vecBody) {
+		// write order: head-->tail
+ 		fout.write((char*)&each, sizeof(each));
+ 	}
+
+	// each element 4B
+ 	fout.write((char*)CMyMap::m_gMap, sizeof(CMyMap::m_gMap));
+
+	fout.close();
+
+	// The third para can't use 0, otherwise, occur error in the view framework
+	MessageBox(0, L"Save Success", L" ", MB_OK);
+}
+
+bool CMySnake::ReadSnakeInfo() {
+	char head_distance = 0;
+	char color_distance = 0;
+	int snake_length = 0;
+	SNAKENODE each = {};
+	CMyFood food_obj;
+	int food_count = 0;
+
+	// Must add ios::binary, otherwise, sometimes, read large buffer can't work
+	fstream fin("snake_info", ios::in | ios::binary);
+	if (!fin) {
+		return false;
+	}
+
+	fin.read((char*)&m_nDirection, sizeof(m_nDirection));  // 4B
+	fin.read((char*)&m_protected_head, sizeof(m_protected_head)); // 1B
+	fin.read((char*)&m_storm_coming, sizeof(m_storm_coming)); // 1B
+	fin.read((char*)&m_choose_level, sizeof(m_choose_level)); // 1B
+	fin.read((char*)&m_time_blood, sizeof(m_time_blood)); // 4B
+	fin.read((char*)&m_score, sizeof(m_score)); // 4B
+	fin.read(&head_distance, sizeof(head_distance)); // 1B
+	fin.read(&color_distance, sizeof(color_distance)); // 1B
+
+	m_p_snake_head = head_distance + (char(*)[3])snake_head_str;
+	m_p_snake_color = color_distance + (char*)snake_color_str;
+	if (m_choose_level == '1') {
+		m_time_interval = snake_init_speed;
+	} else if (m_choose_level == '2') {
+		m_time_interval = snake_init_speed - 100;
+	} else if (CMySnake::m_choose_level == '3') {
+		m_time_interval = snake_init_speed - 200;
+	}
+
+	fin.read((char*)&food_count, sizeof(food_count)); // 4B
+	food_obj.m_food_count = food_count;
+
+	fin.read((char*)&snake_length, sizeof(snake_length)); // 4B
+	// Every node contain (x,y) 8B
+	for (int i = 0; i < snake_length; i++) {
+		fin.read((char*)&each, sizeof(each));
+		m_vecBody.push_back(each);
+	}
+
+	// each element 4B
+	fin.read((char*)CMyMap::m_gMap, sizeof(CMyMap::m_gMap));
+
+	fin.close();
+
+	// The third para can't use 0, otherwise, occur error in the view framework
+	/*MessageBox(0, L"Read Success", L" ", MB_OK);*/
 
 	return true;
 }

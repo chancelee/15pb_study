@@ -16,9 +16,10 @@ typedef enum _SNAKEDIR {
 	RIGHT
 } SNAKEDIR;
 
-const char snake_head[][3] = {">", "¡ñ", "*"};
-const char snake_protected_head[3] = "¡÷";
-const char snake_color[] = { 0x07, 0x02, 0x03, 0x04, 0x05, 0x06 };
+/* we'd better use extern, otherwise, unexpected thing will happen*/
+extern const char snake_head_str[][3];
+extern const char snake_protected_head[3];
+extern const char snake_color_str[];
 
 class CMySnake {
 public:
@@ -27,10 +28,17 @@ public:
 	void Init(int nX, int nY, SNAKEDIR nDir);
 	void ChangeProperty(char c);
 	bool SnakeMove();
+	void SnakeClear();
+	void SaveSnakeInfo();
+	bool ReadSnakeInfo();
 	int m_time_interval;
+	static char m_choose_level;
+	static int m_time_blood;
+	static int m_score;
 	bool m_storm_coming;
 	bool m_protected_head;
-	static bool m_snake_in_hole;
+	char(*m_p_snake_head)[3];
+	char* m_p_snake_color;
 
 private:
 	void SnakeErase();

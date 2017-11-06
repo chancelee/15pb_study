@@ -1,6 +1,8 @@
 #include "MyFood.h"
 #include "MyDraw.h"
 
+const char food_str[][3] = { "¡ï", "¦·", "$", "¡ñ", "¡÷", "¡Þ", "¡Æ" };
+
 CMyFood::CMyFood() {
 }
 
@@ -9,7 +11,6 @@ CMyFood::~CMyFood() {
 }
 
 int CMyFood::m_food_count = 0;
-int CMyFood::m_food_count_storage = 0;
 
 void CMyFood::RandomFood() {
 	for (int i = 0; i < 2; i++) {
