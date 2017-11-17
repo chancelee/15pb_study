@@ -1,0 +1,93 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\FileOperation">
+      <UniqueIdentifier>{7b8132ed-05a4-4965-9def-65e7599a3072}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Encrypt">
+      <UniqueIdentifier>{77582a00-1a00-4631-9296-0612c3fad6f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\LinkNodeOperation">
+      <UniqueIdentifier>{914d1197-2aff-4e74-92df-4c6e96596179}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\LinkNodeOperation\src">
+      <UniqueIdentifier>{08c3f3a7-5b4e-4f9b-ae7c-82b9b70ef705}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\FileOperation\src">
+      <UniqueIdentifier>{10ec4ad2-6270-4fbf-8bf3-24d742c889fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Encrypt\src">
+      <UniqueIdentifier>{7c48dc87-d432-44f9-8d9f-5b1c0cd77ceb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\LinkNodeOperation">
+      <UniqueIdentifier>{2fa41f89-1a76-4933-9488-fa53946e69a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FileOperation">
+      <UniqueIdentifier>{4158eb42-69ab-4d87-932f-4f551d2f1945}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Encrypt">
+      <UniqueIdentifier>{17942cb4-6b74-463e-8d9c-68b771f4e05b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\LinkNodeOperation\inc">
+      <UniqueIdentifier>{d17399a7-a8bf-4ca0-a681-1bd57fa2f985}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FileOperation\inc">
+      <UniqueIdentifier>{7afe75f6-1afe-4549-b64a-d39c24b8c4ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Encrypt\inc">
+      <UniqueIdentifier>{1b3efbb5-b415-4418-86ca-a0062d326a16}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\AccountOperation">
+      <UniqueIdentifier>{7a153c85-0429-469b-9eea-f435bda76893}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AccountOperation">
+      <UniqueIdentifier>{c84a8867-120d-4d34-8c35-9f7d9704f9ed}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="password_note.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="encrypt.cpp">
+      <Filter>Source Files\Encrypt\src</Filter>
+    </ClCompile>
+    <ClCompile Include="LInkNode.cpp">
+      <Filter>Source Files\LinkNodeOperation\src</Filter>
+    </ClCompile>
+    <ClCompile Include="AccountOperation.cpp">
+      <Filter>Source Files\AccountOperation</Filter>
+    </ClCompile>
+    <ClCompile Include="FileOperation.cpp">
+      <Filter>Source Files\FileOperation\src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="encrypt.h">
+      <Filter>Header Files\Encrypt\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="password_note.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinkNode.h">
+      <Filter>Header Files\LinkNodeOperation\inc</Filter>
+    </ClInclude>
+    <ClInclude Include="AccountOperation.h">
+      <Filter>Header Files\AccountOperation</Filter>
+    </ClInclude>
+    <ClInclude Include="FileOperation.h">
+      <Filter>Header Files\FileOperation\inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
