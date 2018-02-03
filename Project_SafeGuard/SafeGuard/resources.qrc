@@ -1,0 +1,31 @@
+<RCC>
+    <qresource prefix="/Resources">
+        <file>ico/settings.ico</file>
+        <file>ico/virus.ico</file>
+        <file>ico/mem.ico</file>
+        <file>ico/car.ico</file>
+        <file>ico/cpu.ico</file>
+        <file>ico/loadpe.ico</file>
+        <file>ico/net.ico</file>
+        <file>ico/trash.ico</file>
+        <file>ico/uninstall.ico</file>
+        <file>ico/disk.ico</file>
+        <file>ico/doc.ico</file>
+        <file>ico/md5.ico</file>
+        <file>ico/cloud.ico</file>
+        <file>ico/ram.ico</file>
+        <file>ico/rocket.ico</file>
+        <file>ico/lightning.ico</file>
+        <file>ico/resource.ico</file>
+        <file>ico/service.ico</file>
+        <file>ico/grub.ico</file>
+        <file>ico/pe.ico</file>
+        <file>ico/recv.ico</file>
+        <file>ico/send.ico</file>
+        <file>png/eye.png</file>
+        <file>png/yzh.png</file>
+        <file>ico/little_rocket.ico</file>
+        <file>ico/cleaner.ico</file>
+        <file>ico/pigeon.ico</file>
+    </qresource>
+</RCC>
