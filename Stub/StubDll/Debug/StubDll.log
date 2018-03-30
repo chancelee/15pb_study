@@ -1,0 +1,5 @@
+﻿  Source.cpp
+     Creating library G:\15PB\Finally\VS_Project\Stub\Debug\StubDll.lib and object G:\15PB\Finally\VS_Project\Stub\Debug\StubDll.exp
+Source.obj : warning LNK4254: section '.data' (C0000040) merged into '.text' (60000020) with different attributes
+  StubDll.vcxproj -> G:\15PB\Finally\VS_Project\Stub\Debug\StubDll.dll
+  StubDll.vcxproj -> G:\15PB\Finally\VS_Project\Stub\Debug\StubDll.pdb (Full PDB)

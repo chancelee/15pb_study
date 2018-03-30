@@ -1,0 +1,89 @@
+关于压缩代码段：
+1、对原代码段进行压缩；
+2、修改区段头表：内存中的虚拟地址，全都不能动，大小，也不能动；考虑到解压缩
+	代码段之前的，不动；
+	代码段：只改大小，不改地址；
+		大小有俩：SizeofRawData【文件对齐】、Misc.VirtualSize【实际大小】，
+		地址有俩：PointerToRawData【文件偏移】、Misc.VirualAddr【RVA】
+	代码段之后的：只改地址，不改大小；
+		大小有俩：SizeofRawData【文件对齐】、Misc.VirtualSize【实际大小】
+		地址有俩：PointerToRawData【文件偏移】、Misc.VirualAddr【RVA】
+	代码段之后的，PointerToRawData = 之前的PointerToRawData + SizeofRawData
+	代码段之后的，Misc.VirtualAddr = 之前的VirtualAddr + 内存对齐(之前的VirtualSize)
+
+	感觉这里，好像可以有个便宜的方法：
+	400 + 400 -> 400 + 200
+	800 + 200 -> 800 - 200 + 200
+	A00 + 200 -> A00 - 200 + 200
+	C00 + 200 -> C00 - 200 + 200
+
+	400 + 600 -> 400 + 200
+	A00 + 200 -> A00 - 400 + 200
+	C00 + 200 -> C00 - 400 + 200
+	E00 + 200 -> E00 - 400 + 200
+
+	1000 + 2000 -> 1000 + 1000 
+	3000 + 1000 -> 3000 - 1000 + 1000
+	4000 + 1000 -> 4000 - 1000 + 1000
+	5000 + 1000 -> 5000 - 1000 + 1000
+
+
+	1000 + 3000 -> 1000 + 1000 
+	4000 + 1000 -> 4000 - 2000 + 1000
+	5000 + 1000 -> 5000 - 2000 + 1000
+	6000 + 1000 -> 6000 - 2000 + 1000
+
+原来代码段，文件对齐后的大小是，SizeofRawData，内存对齐后的大小是 = （内存对齐）VirualSize
+其实，区段头表中，代码段的实际大小A，经过文件对齐后 B = (文件对齐)A，经过内存对齐后 C = (内存对齐)A
+
+B = 区段头表代码段SizeofRawData - (文件对齐)压缩后大小
+C = 区段头表代码段(内存对齐)VirtualSize - (内存对齐)压缩后大小
+
+
+那么，区段头表中，之后的段的PointerToRawData = 原来的PointerToRawData - B；
+		  之后的段的VirtualAddr = 原来的VirtualAddr - C；
+
+3、也都不改，都是虚拟的内存中的；
+修改扩展头里的数据目录表；从0开始的话，要修改的有1、5、9，分别是导入表、重定位表、TLS表；
+   修改的内容，只是VirtualAddr，不改Size，VirtualAddr的计算，需要将原来的Vir - 原来的对应区段RVA + 现在的区段RVA
+
+	现在区段的RVA，再经过步骤二后，已经在各个区段头表中了；就是那个VirtualAddr；
+	所以，需要知道原来的那个地址所在的区段的RVA，就行了，然后，求个差值，再去区段头表中的那个区段，找偏移，加上就行
+
+4、修改扩展头里的映像大小；—— 不能改
+		
+
+
+
+关于解压缩：是需要单独，写一个程序，进行解压缩吗；如果不是，那上面在压缩的时候，就不能改VirtualAddr了；否则，一旦解压出来
+就有问题了；
+
+1、对原压缩段代码，进行解压；直接解压就行了，不需要修改什么东西了；
+
+2、修改各个区段头表中的信息：
+	代码段之前的，不动；
+	代码段：只改大小，不改地址；
+		大小，有两个，SizeOfRawData和Misc.VirtualSize，感觉只需要改内存中的，毕竟已经要运行了；保险起见，都改了也行
+但，即使改了，也不能保存到文件；因此，这个先不改了；也许有用，改了吧；
+		地址，有俩，PointToRawdata，和Misc.VirtualAddr，动内存的先；
+
+	Misc.VirtualSize = (内存对齐)解压后的大小；正常文件中，不是对齐的，但是，为防止出错，毕竟再内存了，就对齐下；
+	SizeofRawData = (文件对齐)解压后的大小；
+
+	PointToRawData——不求了，基址已经是内存了；也没有什么关系；
+	Misc.VirtualAddr ——代码段，不需要修改；
+
+	代码段之后的，只改地址，不改大小；
+		Misc.VirtualAddr = 上一个区段的VirtualAddr + (内存对齐)上一个区段的VirtualSize
+		PointerofRawData——先不管这个；
+		
+		Misc.VirtualAddr = 原来的VirtualAddr + (内存对齐)解压后大小 - 区段头表代码段(内存对齐)VirtualSize
+
+
+
+3、修改
+
+
+
+Please Input User Name: Reginald
+f406633505a77155c56046565035e745

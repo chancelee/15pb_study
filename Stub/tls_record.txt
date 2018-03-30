@@ -1,0 +1,125 @@
+kd> dt nt!_LDR_DATA_TABLE_ENTRY
+   +0x000 InLoadOrderLinks : _LIST_ENTRY
+   +0x008 InMemoryOrderLinks : _LIST_ENTRY
+   +0x010 InInitializationOrderLinks : _LIST_ENTRY
+   +0x018 DllBase          : Ptr32 Void
+   +0x01c EntryPoint       : Ptr32 Void
+   +0x020 SizeOfImage      : Uint4B
+   +0x024 FullDllName      : _UNICODE_STRING
+   +0x02c BaseDllName      : _UNICODE_STRING
+   +0x034 Flags            : Uint4B
+   +0x038 LoadCount        : Uint2B
+   +0x03a TlsIndex         : Uint2B
+   +0x03c HashLinks        : _LIST_ENTRY
+   +0x03c SectionPointer   : Ptr32 Void
+   +0x040 CheckSum         : Uint4B
+   +0x044 TimeDateStamp    : Uint4B
+   +0x044 LoadedImports    : Ptr32 Void
+   +0x048 EntryPointActivationContext : Ptr32 _ACTIVATION_CONTEXT
+   +0x04c PatchInformation : Ptr32 Void
+   +0x050 ForwarderLinks   : _LIST_ENTRY
+   +0x058 ServiceTagLinks  : _LIST_ENTRY
+   +0x060 StaticLinks      : _LIST_ENTRY
+   +0x068 ContextInformation : Ptr32 Void
+   +0x06c OriginalBase     : Uint4B
+   +0x070 LoadTime         : _LARGE_INTEGER
+
+
+
+typedef struct _IMAGE_TLS_DIRECTORY32 {
+    DWORD   StartAddressOfRawData;
+    DWORD   EndAddressOfRawData;
+    DWORD   AddressOfIndex;             // PDWORD
+    DWORD   AddressOfCallBacks;         // PIMAGE_TLS_CALLBACK *
+    DWORD   SizeOfZeroFill;
+    union {
+        DWORD Characteristics;
+        struct {
+            DWORD Reserved0 : 20;
+            DWORD Alignment : 4;
+            DWORD Reserved1 : 8;
+        } DUMMYSTRUCTNAME;
+    } DUMMYUNIONNAME;
+
+} IMAGE_TLS_DIRECTORY32;
+typedef IMAGE_TLS_DIRECTORY32 * PIMAGE_TLS_DIRECTORY32;
+
+
+
+数据目录表里：第10项，从1开始；
+1772C [RVA] ——在.rdata段里，6B2C文件偏移；
+
+VA
+
+这两个中间的是初始化数据；
+00 B0 41 00 StartAddressOfRawData; = 1B000 [RVA]——就在.tls段
+
+08 B2 41 00 EndAddressOfRawData;   = 1B208 [RVA]——就在.tls段
+
+这个是一个下标，数组基地址，在FS:[0x2C]里
+44 91 41 00 AddressOfIndex;        = 19144 [RVA]——在.data段，7744文件偏移；好像都是0
+根据下标，找到地址，然后，将从StartAddress开始的数据，一直到EndAddress，拷贝到找到的内存地址那里；
+
+多个回调函数，会有多个地址，以0结尾；
+20 67 41 00 AddressOfCallBacks;    = 16720 [RVA]——在.rdata段，5B20文件偏移；
+
+下面的，不重要；都一样的貌似；
+00 00 00 00 SizeOfZeroFill;
+00 00 30 00 Characteristics;
+
+
+Please Input User Name: Reginald
+f406633505a77155c56046565035e745
+
+59 11 41 00 = 11159 -> .text段
+41 10 41 00 = 11041 -> .text段
+00 00 00 00 结束
+
+
+
+
+
+
+==============================================
+06 B7 00 10：DLL的这个，不用，直接替换；
+07 B7 00 10：DLL的这个，也不用，直接替换，因为这两个都在原来的.tls段，那个段没有加密和压缩，可以直接替换；
+18 B8 00 10：DLL的这个，直接替换，原来的tls在.data段，我压缩了.rdata，这个就直接替换了；里面的东西，也不用改；
+14 10 00 10：这个，需要修改，1014 RVA - .text段RVA = 14 + .text的PointOfRaw = 414，是有个地址的；这个地址，不改，但
+整体，需要修改；
+00 00 00 00 
+00 00 10 00，DLL的莫非和那个不一样，那就修改为原来的吧，这不是DLL了；
+
+
+.tls合并到了.text，.text已经拷贝过了，需要知道这个.text在新的壳里的PointerToRawData；
+之后，在拷贝前，计算出，这个位置的VA - hStub - 所在区段RVA；
+相加就可以了，另外，需要再加上基址了；这是个VA；
+
+这么弄完以后，修改数据目录表里的第10项，那是个RVA，这个RVA指向自己新加的区段，
+
+新加的区段，就0x18个有价值的字节；
+
+原PE的Start —— 
+原PE的End
+原PE的Index
+新的CALLBACK地址；
+全0
+00 00 30 00 - 这个直接拷贝原来的吧；
+
+这么改了以后，应该会走这个TLS了；
+
+这个TLS里，能够把原来的数据给初始化了，因为，索引没加密，起始区域和结束区域又都在.tls段，映射到内存里的是真实的东西；
+这个时候，自己的回调函数在dll的.text段，那个也能找到的；
+
+走进TLS函数里了；
+这个时候，还不能安心的；
+
+由于目标程序的IAT没有修复，这个时候，不能调用函数；
+第一次，要退出；设个全局变量就行了；
+
+但是，第一次，要在修复完IAT和重定位以后，调用一次；因此，原来的那些个地址，都需要记录的；这个之前已经完成了；应该能用；
+
+后续，比如别人调用创建线程，那个时候，说明早已经修复了IAT ;
+
+别的什么事件，其实，自己的TLS不就能捕获吗，原理上是这么回事的；
+
+就直接在TLS里调用了；
